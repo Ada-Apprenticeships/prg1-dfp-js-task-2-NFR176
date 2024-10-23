@@ -1,42 +1,26 @@
+const fs = require('fs');//fs- the library being imported//
 
-const fs = require('fs');
+function parseFile(indata, outdata, delimiter = ';') {// the function parsefile processes csv file//
+    if (!fs.existsSync(indata)) return -1; //if loop- checks if inputfile exists, if not return -1//
+    //note to self- the delimiter splits each line of the output and input content//
 
-//this will delete the output file//
-function parseFile (indata, outdata, delimiter = ';') {
-   if (!fs.existsSync(indata)) {
-    return -1;
-   }
-   if (fs.existsSync(outdata)) {
-      fs.unlinkSync(outdata);
-    
-    }
-      let recordcount = 0;
-      try {
-         const fileContent = fs.readFileSync(indata, 'utf-8');
-          //utf-8 a way of representing a language//
-         const lines = fileContent.split(/\n/);
+    if (fs.existsSync(outdata)) fs.unlinkSync(outdata);// if output data exists-it will be deleted//
+    const lines = fs.readFileSync(indata, 'utf-8').split(/\n/).slice(1);
+    let recordCount = 0;
 
-         for (let i = 1; i < lines.length; i++) {
-            const line =lines[i].trim();
-            if(line === '') continue;
+    lines.forEach(line => {
+        const trimmedLine = line.trim();//will read through- trim empty lines and whitespace//
+        if (!trimmedLine) return;
 
-            const [review, sentiment] = line.split(delimiter).map(item=> item.trim());
-            const shortReview = review.substring(0, 20);
-            console.log(shortReview)
+        const [review, sentiment] = trimmedLine.split(delimiter).map(item => item.trim()); //splits content into sentiment & review//
+        const shortReview = review.substring(0, 20);//taking first 20 characters of 'review' to make 'shortreview'
+        fs.appendFileSync(outdata, `${sentiment}${delimiter}${shortReview}\n`, 'utf-8');//note-to-self- 'utf-8' is a form of character encoding//
+        recordCount++;
+    });
 
-            fs.appendFileSync (outdata, `${sentiment}${delimiter}${shortReview}\n`, 'utf-8');
-            recordcount ++;
-         }
-      }
-      catch (err) {
-      console.error('Error parsing file:', err);
-      return -1;
-   }
-    return recordcount;
+    return recordCount;//returns n.o processed records//
 }
-parseFile('./datafile.csv','./outputfile.csv')
 
+parseFile('./datafile.csv', './outputfile.csv');
 
-module.exports ={
-   parseFile,
-}
+module.exports = { parseFile };

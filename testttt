@@ -1,0 +1,31 @@
+const fs = require('fs');//fs is a library-pre-existing code that people can acess//
+
+
+function parseFile(inData, outData, delimiter = ';') {//the function 'parsefile' has been defined to process the exisiting csv files//
+    if (!fs.existsSync(inData)) return -1;// -1 will be returned if the inputfile doesnt exist//
+
+    if (fs.existsSync(outData)) fs.unlinkSync(outData); //our brief asked to remove any exisiting output files- this .existsSync function from the library enables this//
+
+    const lines = fs.readFileSync(inData, 'utf-8').split(/\n/).slice(1);
+    let recordCount = 0;
+
+    lines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+        //appendFile... appends the 'review' and the 'sentiment' to the output file
+        const [review, sentiment] = trimmedLine.split(delimiter).map(item => item.trim());
+        const shortReview = review.substring(0, 20);//- take the first 20 characters of the review to make the short version
+        fs.appendFileSync(outData, `${sentiment}${delimiter}${shortReview}\n`, 'utf-8');//utf-8 is a way of representing all characters in a language//
+        recordCount++;
+    });
+
+    return recordCount;//returning the n.o processed records//
+}
+
+parseFile('./datafile.csv', './outputfile.csv');
+
+module.exports = { parseFile };
+
+
+
+
